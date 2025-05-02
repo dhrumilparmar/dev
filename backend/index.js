@@ -10,19 +10,38 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname));
 app.use(express.json());
 
-// MongoDB connection with improved error handling
-mongoose.connect(process.env.MONGODB_URI.trim(), {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-    family: 4
-})
-.then(() => {
-    console.log("Connected to MongoDB Successfully");
-})
-.catch((err) => {
-    console.error("MongoDB Connection Error:", err);
+// Improved MongoDB connection with retry logic
+const connectWithRetry = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 15000,
+            socketTimeoutMS: 45000,
+            family: 4,
+            keepAlive: true,
+            retryWrites: true,
+            w: 'majority'
+        });
+        console.log('MongoDB Connected Successfully');
+    } catch (err) {
+        console.error('MongoDB Connection Error:', err);
+        console.log('Retrying in 5 seconds...');
+        setTimeout(connectWithRetry, 5000);
+    }
+};
+
+// Initialize connection
+connectWithRetry();
+
+// Monitor connection events
+mongoose.connection.on('error', err => {
+    console.error('MongoDB error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB disconnected, attempting to reconnect...');
+    connectWithRetry();
 });
 
 app.get('/', (req, res) => {
