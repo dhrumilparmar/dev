@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -9,15 +10,20 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname));
 app.use(express.json());
 
-// MongoDB connection with error handling
-mongoose.connect("mongodb://localhost:27017/dev")
-    .then(() => {
-        console.log("Connected to MongoDB");
-    })
-    .catch((err) => {
-        console.log("Failed to connect to MongoDB");
-        console.error(err);
-    });
+// Updated MongoDB connection with options
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+})
+.then(() => {
+    console.log("Connected to MongoDB");
+})
+.catch((err) => {
+    console.log("Failed to connect to MongoDB");
+    console.error(err);
+});
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/index.html'));
@@ -49,34 +55,31 @@ app.get('/dashboard', (req, res) => {
 
 app.post('/signup', async (req, res) => {
     try {
-        // console.log('Received signup request:', req.body); // Debug log
+        // Check MongoDB connection
+        if (mongoose.connection.readyState !== 1) {
+            console.error('MongoDB not connected');
+            return res.status(500).json({ message: 'Database connection error' });
+        }
+
         const { name, email, password } = req.body;
         
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        // console.log('Existing user check:', existingUser); // Debug log
+        // Check if user exists
+        const existingUser = await User.findOne({ email }).maxTimeMS(5000);
         
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Create new user
-        const user = new User({
-            name,
-            email,
-            password
-        });
-        
-        // console.log('Created user object:', user); // Debug log
-        
-        // Save user to database
+        const user = new User({ name, email, password });
         await user.save();
-        console.log('User saved successfully'); // Debug log
         
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
         console.error('Signup error:', error);
-        res.status(500).json({ message: 'Error creating user' });
+        res.status(500).json({ 
+            message: 'Error creating user',
+            error: error.message 
+        });
     }
 });
 
