@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevPack - Learning Roadmaps</title>
+    <link rel="stylesheet" href="/public//roadmap.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="/" class="logo-link">
+                    <span class="code-brackets">&lt;&gt;</span>
+                    <span class="logo-text">DevPack</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="/tools">Tools</a>
+                <a href="/courses">Courses</a>
+                <a href="/roadmaps" class="active">Roadmaps</a>
+            </div>
+            <div class="auth-buttons">
+                <div id="logged-out-buttons">
+                    <a href="/login" class="login-btn">Log in</a>
+                    <a href="/signup" class="signup-btn">Sign up</a>
+                </div>
+                <div id="logged-in-buttons" style="display: none;">
+                    <a href="#" id="logout-btn" class="logout-btn">Log out</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="roadmaps-page">
+        <h1>Learning Roadmaps</h1>
+        <p class="roadmaps-description">Follow structured learning paths to become a professional developer</p>
+        
+        <div class="roadmaps-grid">
+            <!-- Frontend Development -->
+            <div class="roadmap-card">
+                <div class="roadmap-header">
+                    <h3>Frontend Development</h3>
+                    <span class="difficulty">Beginner Friendly</span>
+                </div>
+                <p>Master modern web development with HTML, CSS, JavaScript, and popular frameworks.</p>
+                <div class="roadmap-footer">
+                    <span class="duration">3-6 months</span>
+                    <a href="https://roadmap.sh/frontend" class="view-btn">View Roadmap</a>
+                </div>
+            </div>
+
+            <!-- Backend Development -->
+            <div class="roadmap-card">
+                <div class="roadmap-header">
+                    <h3>Backend Development</h3>
+                    <span class="difficulty">Intermediate</span>
+                </div>
+                <p>Learn server-side programming, databases, APIs, and system architecture.</p>
+                <div class="roadmap-footer">
+                    <span class="duration">4-8 months</span>
+                    <a href="https://roadmap.sh/backend" class="view-btn">View Roadmap</a>
+                </div>
+            </div>
+
+            <!-- Full Stack Development -->
+            <div class="roadmap-card">
+                <div class="roadmap-header">
+                    <h3>Full Stack Development</h3>
+                    <span class="difficulty">Advanced</span>
+                </div>
+                <p>Combine frontend and backend skills to build complete web applications.</p>
+                <div class="roadmap-footer">
+                    <span class="duration">6-12 months</span>
+                    <a href="https://roadmap.sh/full-stack" class="view-btn">View Roadmap</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Check login status and update UI
+        const checkLoginStatus = () => {
+            const userEmail = localStorage.getItem('userEmail');
+            const loggedOutButtons = document.getElementById('logged-out-buttons');
+            const loggedInButtons = document.getElementById('logged-in-buttons');
+            
+            if (userEmail) {
+                loggedOutButtons.style.display = 'none';
+                loggedInButtons.style.display = 'block';
+            } else {
+                loggedOutButtons.style.display = 'block';
+                loggedInButtons.style.display = 'none';
+            }
+        };
+
+        // Add logout functionality
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('userEmail');
+            checkLoginStatus();
+            window.location.href = '/login';
+        });
+
+        // Call checkLoginStatus when page loads
+        checkLoginStatus();
+    </script>
+</body>
+</html>

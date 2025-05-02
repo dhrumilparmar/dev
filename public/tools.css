@@ -1,0 +1,223 @@
+/* Tools Page Styles */
+.tools-page {
+    padding: 4rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    text-align: center;
+    background-color: #f8fafc;
+}
+
+.tools-page h1 {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+    color: #1a1a1a;
+}
+
+.tools-description {
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 4rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 3rem;
+    padding: 2rem;
+}
+
+.tool-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    text-align: left;
+    border: 1px solid #e5e7eb;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.tool-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+
+.tool-header h3 {
+    font-size: 1.75rem;
+    color: #1e293b;
+    margin: 0;
+}
+
+.category {
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.tool-card p {
+    color: #64748b;
+    font-size: 1.25rem;
+    line-height: 1.6;
+    margin: 1.5rem 0;
+}
+
+.tool-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.access-btn {
+    background-color: #2563eb;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: background-color 0.2s;
+}
+
+.access-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.access-btn.using {
+    background-color: #4CAF50;
+    cursor: default;
+}
+
+.access-btn.using:hover {
+    background-color: #4CAF50;
+}
+
+/* Navbar Styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 5%;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.code-brackets {
+    margin-right: 0.5rem;
+    color: #333;
+}
+
+.logo-text {
+    color: #333;
+}
+
+.logo-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    color: inherit;
+    transition: opacity 0.2s ease;
+}
+
+.logo-link:hover {
+    opacity: 0.9;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 1.2rem;
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: #2563eb;
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.nav-links a.active::after {
+    width: 100%;
+    background-color: #2563eb;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.login-btn {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 1.2rem;
+}
+
+.signup-btn {
+    text-decoration: none;
+    color: #fff;
+    background-color: #2563eb;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 1.2rem;
+    transition: background-color 0.2s ease;
+}
+
+.signup-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.logout-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    background-color: #dc3545;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+#logged-in-buttons, #logged-out-buttons {
+    display: flex;
+    gap: 10px;
+}

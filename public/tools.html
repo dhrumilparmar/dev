@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevPack - Tools</title>
+    <link rel="stylesheet" href="/public//tools.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo"> 
+                <a href="/" class="logo-link">
+                    <span class="code-brackets">&lt;&gt;</span>
+                    <span class="logo-text">DevPack</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="/tools" class="active">Tools</a>
+                <a href="/courses">Courses</a>
+                <a href="/roadmaps">Roadmaps</a>
+            </div>
+            <div class="auth-buttons">
+                <div id="logged-out-buttons">
+                    <a href="/login" class="login-btn">Log in</a>
+                    <a href="/signup" class="signup-btn">Sign up</a>
+                </div>
+                <div id="logged-in-buttons" style="display: none;">
+                    <a href="/dashboard" class="dashboard-btn">Dashboard</a>
+                    <a href="#" id="logout-btn" class="logout-btn">Log out</a>
+                </div>
+            </div>        </nav>
+    </header>
+
+    <main class="tools-page">
+        <h1>Developer Tools</h1>
+        <p class="tools-description">Access premium developer tools and services for free with your student status</p>
+        
+        <div class="tools-grid">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>GitHub Pro</h3>
+                    <span class="category">Development</span>
+                </div>
+                <p>Unlimited private repositories, GitHub Copilot access, and more.</p>
+                <div class="tool-footer">
+                    <a href="https://education.github.com/pack" class="access-btn">Get Access</a>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>JetBrains IDEs</h3>
+                    <span class="category">Development</span>
+                </div>
+                <p>Professional developer tools for web, mobile and desktop development.</p>
+                <div class="tool-footer">
+                    <a href="https://www.jetbrains.com/ides/#choose-your-ide" class="access-btn">Get Access</a>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-header">
+                    <h3>MongoDB Atlas</h3>
+                    <span class="category">Cloud</span>
+                </div>
+                <p>Fully-managed cloud database service for modern applications.</p>
+                <div class="tool-footer">
+                    <a href="https://www.mongodb.com/atlas" class="access-btn">Get Access</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+         // Check login status and update UI
+    const checkLoginStatus = () => {
+        const userEmail = localStorage.getItem('userEmail');
+        const loggedOutButtons = document.getElementById('logged-out-buttons');
+        const loggedInButtons = document.getElementById('logged-in-buttons');
+        
+        if (userEmail) {
+            loggedOutButtons.style.display = 'none';
+            loggedInButtons.style.display = 'block';
+        } else {
+            loggedOutButtons.style.display = 'block';
+            loggedInButtons.style.display = 'none';
+        }
+    };
+
+    // Add logout functionality
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('userEmail');
+        checkLoginStatus();
+        window.location.href = '/login';
+    });
+
+    // Call checkLoginStatus when page loads
+    checkLoginStatus();
+
+    // Update the addTool function
+    const addTool = async (toolName, accessBtn) => {
+        const userEmail = localStorage.getItem('userEmail');
+        
+        if (!userEmail) {
+            alert('Please log in first');
+            window.location.href = '/login';
+            return false;
+        }
+
+        try {
+            const response = await fetch('/add-tool', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: userEmail,  // Uncommented this line
+                    tool: toolName
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                alert(error.message || 'Error adding tool');
+                return false;
+            }
+
+            const data = await response.json();
+            
+            if (!data.isUsing) {
+                alert(`${toolName} added to your tools!`);
+                // Update button appearance
+                accessBtn.textContent = 'Using';
+                accessBtn.style.backgroundColor = '#45a049';
+                accessBtn.classList.add('using');
+                return true;
+            } else {
+                alert(`You are already using ${toolName}`);
+                // Update button appearance for using state
+                accessBtn.textContent = 'Using';
+                accessBtn.style.backgroundColor = '#45a049';
+                accessBtn.classList.add('using');
+                return true; // Changed to true to allow opening the link
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error adding tool');
+            return false;
+        }
+    };
+
+    // Add click handlers to all access buttons
+    document.querySelectorAll('.tool-footer .access-btn').forEach(btn => {
+        const originalHref = btn.href;
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const toolCard = e.target.closest('.tool-card');
+            const toolName = toolCard.querySelector('h3').textContent;
+            
+            const added = await addTool(toolName, e.target);
+            if (added) {
+                // Open tool link in new tab after successful addition
+                window.open(originalHref, '_blank');
+            }
+        });
+    });
+
+    // Check if user is already using tools and update UI
+    const checkUserTools = async () => {
+        const userEmail = localStorage.getItem('userEmail');
+        if (!userEmail) return;
+
+        try {
+            const response = await fetch('/api/user-data', {  // Changed endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: userEmail
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch user tools');
+            }
+
+            const data = await response.json();
+            if (data.tools && data.tools.length > 0) {
+                // Update UI for tools user is already using
+                document.querySelectorAll('.tool-card').forEach(card => {
+                    const toolName = card.querySelector('h3').textContent;
+                    if (data.tools.includes(toolName)) {
+                        const accessBtn = card.querySelector('.access-btn');
+                        accessBtn.textContent = 'Using';
+                        accessBtn.style.backgroundColor = '#45a049';
+                        accessBtn.classList.add('using');
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error checking tools:', error);
+        }
+    };
+
+    // Call checkUserTools when page loads
+    checkLoginStatus();
+    checkUserTools();
+    </script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevPack - Courses</title>
+    <link rel="stylesheet" href="/public//courses.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="/" class="logo-link">
+                    <span class="code-brackets">&lt;&gt;</span>
+                    <span class="logo-text">DevPack</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="/tools">Tools</a>
+                <a href="/courses" class="active">Courses</a>
+                <a href="/roadmaps">Roadmaps</a>
+            </div>
+            <div class="auth-buttons">
+                <div id="logged-out-buttons">
+                    <a href="/login" class="login-btn">Log in</a>
+                    <a href="/signup" class="signup-btn">Sign up</a>
+                </div>
+                <div id="logged-in-buttons" style="display: none;">
+                    <a href="#" id="logout-btn" class="logout-btn">Log out</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="courses-page">
+        <h1>Learning Resources</h1>
+        <p class="courses-description">Access premium courses and learning platforms for free with your student status</p>
+        
+        <div class="courses-grid">
+            <!-- Frontend Masters -->
+            <div class="course-card">
+                <div class="course-header">
+                    <h3>FreeCodeCamp</h3>
+                    <span class="category">Web Development</span>
+                </div>
+                <p>In-depth JavaScript, React, Vue.js courses from industry experts.</p>
+                <div class="course-footer">
+                    <div class="stats">
+                        <span class="duration">6 months free</span>
+                        <span class="separator">•</span>
+                    </div>
+                    <a href="https://www.freecodecamp.org/learn/2022/responsive-web-design/" class="enroll-btn">Enroll Now</a>
+                </div>
+            </div>
+
+            <!-- Coursera -->
+            <div class="course-card">
+                <div class="course-header">
+                    <h3>Coursera</h3>
+                    <span class="category">Multiple Domains</span>
+                </div>
+                <p>Access to specialized courses and certificates from top universities.</p>
+                <div class="course-footer">
+                    <div class="stats">
+                        <span class="duration">12 months free</span>
+                        <span class="separator">•</span>
+                    </div>
+                    <a href="https://www.coursera.org/" class="enroll-btn">Enroll Now</a>
+                </div>
+            </div>
+
+            <!-- DataCamp -->
+            <div class="course-card">
+                <div class="course-header">
+                    <h3>AWS</h3>
+                    <span class="category">Devops Enginers</span>
+                </div>
+                <p>Learn cloud computing, analytics, and machine learning interactively.</p>
+                <div class="course-footer">
+                    <div class="stats">
+                        <span class="duration">12 months free</span>
+                        <span class="separator">•</span>
+                    </div>
+                    <a href="https://aws.amazon.com/id/education/awseducate/" class="enroll-btn">Enroll Now</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Check login status and update UI
+        const checkLoginStatus = () => {
+            const userEmail = localStorage.getItem('userEmail');
+            const loggedOutButtons = document.getElementById('logged-out-buttons');
+            const loggedInButtons = document.getElementById('logged-in-buttons');
+            
+            if (userEmail) {
+                loggedOutButtons.style.display = 'none';
+                loggedInButtons.style.display = 'flex';
+            } else {
+                loggedOutButtons.style.display = 'flex';
+                loggedInButtons.style.display = 'none';
+            }
+        };
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('userEmail');
+            checkLoginStatus();
+            window.location.href = '/login';
+        });
+
+        // Helper to update enroll button
+        const updateEnrollButton = (btn) => {
+            btn.textContent = 'Enrolled';
+            btn.style.backgroundColor = '#45a049';
+            btn.classList.add('enrolled');
+        };
+
+        // Enroll course function
+        const enrollCourse = async (courseName, enrollBtn) => {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) {
+                alert('Please log in first');
+                window.location.href = '/login';
+                return false;
+            }
+            try {
+                const response = await fetch('/enroll-course', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, courseName })
+                });
+                const data = await response.json();
+                if (response.ok && !data.isEnrolled) {
+                    alert(`Successfully enrolled in ${courseName}!`);
+                    updateEnrollButton(enrollBtn);
+                    return true;
+                } else if (data.isEnrolled) {
+                    alert(`You are already enrolled in ${courseName}`);
+                    updateEnrollButton(enrollBtn);
+                    return true;
+                }
+            } catch (error) {
+                alert('Error enrolling in course');
+                return false;
+            }
+        };
+
+        // Check enrolled courses on page load
+        const checkEnrollmentStatus = async () => {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) return;
+            try {
+                const response = await fetch('/api/user-data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                const data = await response.json();
+                if (response.ok && data.enrolledCourses) {
+                    document.querySelectorAll('.course-card').forEach(card => {
+                        const courseName = card.querySelector('h3').textContent;
+                        // Support both array of strings and array of objects
+                        const enrolled = data.enrolledCourses.some(c =>
+                            typeof c === 'string' ? c === courseName : c.courseName === courseName
+                        );
+                        if (enrolled) {
+                            const enrollBtn = card.querySelector('.enroll-btn');
+                            updateEnrollButton(enrollBtn);
+                        }
+                    });
+                }
+            } catch (error) {
+                // Silent fail
+            }
+        };
+
+        // Add enrolled button styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .enroll-btn.enrolled {
+                background-color: #45a049 !important;
+                color: white;
+                cursor: pointer;
+            }
+            .enroll-btn.enrolled:hover {
+                background-color: #3d8b3d !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize
+        checkLoginStatus();
+        checkEnrollmentStatus().then(() => {
+            // Add click handlers to all enroll buttons
+            document.querySelectorAll('.enroll-btn').forEach(btn => {
+                const originalHref = btn.href;
+                btn.addEventListener('click', async (e) => {
+                    // If already enrolled, just open the link
+                    if (btn.classList.contains('enrolled')) {
+                        window.open(originalHref, '_blank');
+                        return;
+                    }
+                    e.preventDefault();
+                    const courseCard = e.target.closest('.course-card');
+                    const courseName = courseCard.querySelector('h3').textContent;
+                    const enrolled = await enrollCourse(courseName, e.target);
+                    if (enrolled) {
+                        window.open(originalHref, '_blank');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

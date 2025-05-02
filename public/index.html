@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Developer Pack</title>
+    <link rel="stylesheet" href="/public//index.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <span class="code-brackets">&lt;&gt;</span>
+                <span class="logo-text">DevPack</span>
+            </div>
+            <div class="nav-links">
+                <a href="/tools">Tools</a>
+                <a href="/courses">Courses</a>
+                <a href="/roadmaps">Roadmaps</a>
+            </div>
+            <div class="auth-buttons" id="logged-out-buttons">
+                <a href="/login" class="login-btn">Log in</a>
+                <a href="/signup" class="signup-btn">Sign up</a>
+            </div>
+            <div class="auth-buttons" id="logged-in-buttons" style="display: none;">
+                <a href="/dashboard" class="dashboard-btn">Dashboard</a>
+                <a href="#" id="logout-btn" class="logout-btn">Log out</a>
+                <span class="user-email"></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Student Developer Pack</h1>
+            <p class="hero-subtitle">
+                Get access to the best developer tools, courses, and resources - all for free with your student status.
+            </p>
+            <div class="cta-buttons">
+                <a href="/signup" class="get-started-btn">
+                    Get Started
+                </a>
+                <a href="/tools" class="explore-btn">Explore Tools</a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Check login status and update UI
+        const checkLoginStatus = () => {
+            const userEmail = localStorage.getItem('userEmail');
+            const loggedOutButtons = document.getElementById('logged-out-buttons');
+            const loggedInButtons = document.getElementById('logged-in-buttons');
+            const getStartedBtn = document.querySelector('.get-started-btn');
+            
+            if (userEmail) {
+                loggedOutButtons.style.display = 'none';
+                loggedInButtons.style.display = 'flex';
+                // Update welcome message if needed
+                const welcomeMessage = document.querySelector('.user-email');
+                if (welcomeMessage) {
+                    welcomeMessage.textContent = `Welcome, ${userEmail}`;
+                }
+                // Hide Get Started button if logged in
+                if (getStartedBtn) getStartedBtn.style.display = 'none';
+            } else {
+                loggedOutButtons.style.display = 'block';
+                loggedInButtons.style.display = 'none';
+                // Show Get Started button if logged out
+                if (getStartedBtn) getStartedBtn.style.display = 'inline-block';
+            }
+        };
+
+        // Add logout functionality
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('userEmail');
+            checkLoginStatus();
+            window.location.href = '/login';
+        });
+
+        // Call checkLoginStatus when page loads
+        checkLoginStatus();
+    </script>
+</body>
+</html>

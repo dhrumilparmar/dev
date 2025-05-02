@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevPack - Dashboard</title>
+    <link rel="stylesheet" href="/public//dashboard.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <a href="/" class="logo-link">
+                    <span class="code-brackets">&lt;&gt;</span>
+                    <span class="logo-text">DevPack</span>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </a>
+                <a href="/tools" class="nav-item">
+                    <span class="nav-icon">🛠️</span>
+                    Tools
+                </a>
+                <a href="/courses" class="nav-item">
+                    <span class="nav-icon">📚</span>
+                    Courses
+                </a>
+                <a href="/roadmaps" class="nav-item">
+                    <span class="nav-icon">🗺️</span>
+                    Roadmaps
+                </a>
+            </nav>
+            <div class="user-section">
+                <div class="user-info">
+                    <span class="user-email"></span>
+                </div>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Dashboard</h1>
+                <div class="user-welcome">Welcome back, <span class="user-name">Student</span>!</div>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Tools Section -->
+                <section class="dashboard-section tools-section">
+                    <h2>Your Tools</h2>
+                    <div class="tools-grid" id="user-tools">
+                        <!-- Tools will be populated dynamically -->
+                    </div>
+                </section>
+
+                <!-- Courses Section -->
+                <section class="dashboard-section courses-section">
+                    <h2>Enrolled Courses</h2>
+                    <div class="courses-grid" id="user-courses">
+                        <!-- Courses will be populated dynamically -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Check authentication
+        const checkAuth = () => {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) {
+                window.location.href = '/login';
+                return;
+            }
+            document.querySelector('.user-email').textContent = userEmail;
+        };
+
+        // Fetch user data
+        const fetchUserData = async () => {
+            const userEmail = localStorage.getItem('userEmail');
+            try {
+                const response = await fetch('/api/user-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: userEmail })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    displayUserTools(data.tools);
+                    displayUserCourses(data.enrolledCourses); // <-- Use the correct property
+                }        
+                } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        // Display user's tools
+        const displayUserTools = (tools) => {
+            const toolsGrid = document.getElementById('user-tools');
+            
+            // Filter out empty tools and null values
+            const validTools = tools.filter(tool => tool && tool.trim() !== '');
+            
+            if (validTools.length === 0) {
+                toolsGrid.innerHTML = '<p class="no-items">No tools added yet</p>';
+                return;
+            }
+
+            toolsGrid.innerHTML = validTools.map(tool => `
+                <div class="tool-card">
+                    <div class="tool-header">
+                        <h3>${tool}</h3>
+                        <span class="status-badge">Active</span>
+                    </div>
+                    <a href="#" class="access-btn using">
+                        <span class="icon">🔗</span>
+                        Using
+                    </a>
+                </div>
+            `).join('');
+        };
+
+        // Display user's courses
+        const displayUserCourses = (courses) => {
+            const coursesGrid = document.getElementById('user-courses');
+            if (!courses || courses.length === 0) {
+                coursesGrid.innerHTML = '<p class="no-items">No courses enrolled yet</p>';
+                return;
+            }
+            coursesGrid.innerHTML = courses.map(course => {
+                const courseName = typeof course === 'string' ? course : (course.Name || course.courseName || '');
+                return `
+                    <div class="course-card">
+                        <h3>${courseName}</h3>
+                        <a href="#" class="enroll-btn enrolled">Enrolled</a>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('userEmail');
+            window.location.href = '/login';
+        });
+
+        // Initialize dashboard
+        checkAuth();
+        fetchUserData();
+    </script>
+</body>
+</html>
