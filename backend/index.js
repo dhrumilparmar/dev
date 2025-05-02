@@ -18,11 +18,16 @@ const connectDB = async () => {
             useUnifiedTopology: true,
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
-            family: 4, // Force IPv4
+            family: 4,
+            auth: {
+                username: 'dhrumilparmar27481',
+                password: '12dhrumil21'
+            }
         });
         console.log('MongoDB Connected Successfully');
     } catch (err) {
         console.error('MongoDB Connection Error:', err);
+        console.error('Error details:', err.message);
         process.exit(1);
     }
 };
