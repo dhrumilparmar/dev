@@ -10,12 +10,13 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname));
 app.use(express.json());
 
-// MongoDB connection with error handling
-mongoose.connect(process.env.MONGODB_URI, {
+// MongoDB connection with improved error handling
+mongoose.connect(process.env.MONGODB_URI.trim(), {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
+    family: 4
 })
 .then(() => {
     console.log("Connected to MongoDB Successfully");
