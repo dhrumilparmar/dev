@@ -10,18 +10,35 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname));
 app.use(express.json());
 
-// MongoDB connection with error handling
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-})
-.then(() => {
-    console.log("Connected to MongoDB Successfully");
-})
-.catch((err) => {
-    console.error("MongoDB Connection Error:", err);
+// Improved MongoDB connection with retry logic
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+            family: 4, // Force IPv4
+        });
+        console.log('MongoDB Connected Successfully');
+    } catch (err) {
+        console.error('MongoDB Connection Error:', err);
+        // Retry connection after 5 seconds
+        setTimeout(connectDB, 5000);
+    }
+};
+
+// Initial connection
+connectDB();
+
+// Handle connection errors
+mongoose.connection.on('error', err => {
+    console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB disconnected. Attempting to reconnect...');
+    connectDB();
 });
 
 app.get('/', (req, res) => {
@@ -54,34 +71,36 @@ app.get('/dashboard', (req, res) => {
 
 app.post('/signup', async (req, res) => {
     try {
-        // console.log('Received signup request:', req.body); // Debug log
+        // Check MongoDB connection state
+        if (mongoose.connection.readyState !== 1) {
+            console.error('Database not connected. Current state:', mongoose.connection.readyState);
+            return res.status(500).json({ message: 'Database connection not ready' });
+        }
+
         const { name, email, password } = req.body;
         
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        // console.log('Existing user check:', existingUser); // Debug log
+        // Add timeout to findOne operation
+        const existingUser = await User.findOne({ email }).maxTimeMS(5000);
         
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Create new user
-        const user = new User({
-            name,
-            email,
-            password
-        });
+        const user = new User({ name, email, password });
+        await user.save().maxTimeMS(5000);
         
-        // console.log('Created user object:', user); // Debug log
-        
-        // Save user to database
-        await user.save();
-        console.log('User saved successfully'); // Debug log
-        
+        console.log('User saved successfully:', user.email);
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
-        console.error('Signup error:', error);
-        res.status(500).json({ message: 'Error creating user' });
+        console.error('Signup error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        res.status(500).json({ 
+            message: 'Error creating user',
+            error: error.message 
+        });
     }
 });
 
